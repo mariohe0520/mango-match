@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🥭 芒果消消乐 - 魔兽萌宠版 V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 420px;
+            width: 95%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .title {
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        
+        .level-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .level-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .moves-left {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 8px 15px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 70px;
+        }
+        
+        .stat-label {
+            font-size: 0.7em;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .progress-container {
+            background: #ddd;
+            border-radius: 10px;
+            height: 25px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 0 0 3px white;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
+            touch-action: none;
+        }
+        
+        .pet-summon {
+            position: fixed;
+            font-size: 4em;
+            animation: petPop 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        @keyframes petPop {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            50% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg) translateY(-50px); opacity: 0; }
+        }
+        
+        .combo-text {
+            position: fixed;
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 0 white, -2px -2px 0 white;
+            animation: comboFly 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        @keyframes comboFly {
+            0% { transform: scale(0.5); opacity: 0; }
+            30% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1) translateY(-30px); opacity: 0; }
+        }
+        
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 12px;
+            font-size: 1em;
+            display: none;
+        }
+        
+        .message.show {
+            display: block;
+            animation: messageIn 0.3s ease;
+        }
+        
+        @keyframes messageIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .message.fail {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .footer span {
+            color: #f5576c;
+        }
+        
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 350px;
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .modal-emoji {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .star-rating {
+            font-size: 2em;
+            margin: 15px 0;
+        }
+        
+        .sound-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 100;
+        }
+        
+        /* 教程样式 */
+        .tutorial-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .tutorial-overlay.show {
+            display: flex;
+        }
+        
+        .tutorial-box {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 320px;
+        }
+        
+        .tutorial-step {
+            font-size: 1.1em;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .tutorial-emoji {
+            font-size: 3em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <span class="sound-toggle" id="soundToggle">🔊</span>
+        
+        <div class="header">
+            <h1 class="title">🥭 芒果消消乐</h1>
+            <p style="font-size: 0.9em; color: #888;">魔兽萌宠版 ✨</p>
+        </div>
+        
+        <div class="level-info">
+            <span class="level-badge" id="levelBadge">第 1 关</span>
+            <span class="moves-left" id="movesLeft">步数: 20</span>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">分数</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">目标</div>
+                <div class="stat-value" id="target">500</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">连击</div>
+                <div class="stat-value" id="combo">0</div>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0 / 500</div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="footer">
+            专属于 <span>芒果过敏</span> 的小游戏 💕
+        </div>
+    </div>
+    
+    <!-- 关卡完成弹窗 -->
+    <div class="modal" id="levelModal">
+        <div class="modal-content">
+            <div class="modal-emoji" id="modalEmoji">🎉</div>
+            <div class="modal-title" id="modalTitle">太棒了！</div>
+            <div class="star-rating" id="starRating">⭐⭐⭐</div>
+            <p id="modalText">你完成了第 1 关！</p>
+            <br>
+            <button class="btn btn-primary" id="nextLevelBtn">下一关</button>
+            <button class="btn btn-secondary" id="retryBtn">重玩</button>
+        </div>
+    </div>
+    
+    <!-- 关卡失败弹窗 -->
+    <div class="modal" id="failModal">
+        <div class="modal-content">
+            <div class="modal-emoji">😢</div>
+            <div class="modal-title">差一点点！</div>
+            <p>步数用完了，再试一次吧！</p>
+            <br>
+            <button class="btn btn-primary" id="retryBtn2">再来一次</button>
+        </div>
+    </div>
+    
+    <!-- 教程弹窗 -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-box">
+            <div class="tutorial-emoji">👆</div>
+            <div class="modal-title">欢迎来到芒果消消乐！</div>
+            <div class="tutorial-step">
+                1️⃣ 点击一个萌宠选中它<br>
+                2️⃣ 再点击相邻的萌宠交换<br>
+                3️⃣ 三个相同的消除得分！<br>
+                4️⃣ 在步数用完前达到目标分数
+            </div>
+            <div class="tutorial-emoji">🐸🦊🐻🐰🦉🐲</div>
+            <button class="btn btn-primary" id="startGameBtn">开始游戏！</button>
+        </div>
+    </div>
+
+    <script>
+        // ============ 音效系统 (Web Audio API) ============
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let soundEnabled = true;
+        
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+        
+        function playTone(freq, duration, type = 'sine', volume = 0.3) {
+            if (!soundEnabled || !audioCtx) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.frequency.value = freq;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+        
+        function playMatchSound() {
+            playTone(523, 0.1); // C5
+            setTimeout(() => playTone(659, 0.1), 50); // E5
+            setTimeout(() => playTone(784, 0.15), 100); // G5
+        }
+        
+        function playComboSound(comboNum) {
+            const baseFreq = 400 + comboNum * 50;
+            playTone(baseFreq, 0.1, 'square', 0.2);
+            setTimeout(() => playTone(baseFreq * 1.25, 0.1, 'square', 0.2), 80);
+            setTimeout(() => playTone(baseFreq * 1.5, 0.2, 'square', 0.25), 160);
+        }
+        
+        function playLevelUpSound() {
+            [523, 659, 784, 1047].forEach((freq, i) => {
+                setTimeout(() => playTone(freq, 0.2, 'sine', 0.3), i * 100);
+            });
+        }
+        
+        function playFailSound() {
+            playTone(300, 0.3, 'sawtooth', 0.2);
+            setTimeout(() => playTone(250, 0.4, 'sawtooth', 0.2), 200);
+        }
+        
+        function playSwapSound() {
+            playTone(400, 0.08, 'sine', 0.15);
+        }
+        
+        function playInvalidSound() {
+            playTone(200, 0.15, 'square', 0.1);
+        }
+        
+        // ============ 关卡系统 ============
+        const LEVELS = [
+            { target: 500, moves: 25, grid: 7 },
+            { target: 800, moves: 25, grid: 7 },
+            { target: 1200, moves: 25, grid: 7 },
+            { target: 1500, moves: 22, grid: 7 },
+            { target: 2000, moves: 22, grid: 7 },
+            { target: 2500, moves: 20, grid: 7 },
+            { target: 3000, moves: 20, grid: 7 },
+            { target: 3500, moves: 20, grid: 8 },
+            { target: 4000, moves: 18, grid: 8 },
+            { target: 4500, moves: 18, grid: 8 },
+            { target: 5000, moves: 18, grid: 8 },
+            { target: 6000, moves: 18, grid: 8 },
+            { target: 7000, moves: 16, grid: 8 },
+            { target: 8000, moves: 16, grid: 8 },
+            { target: 9000, moves: 16, grid: 8 },
+            { target: 10000, moves: 15, grid: 8 },
+            { target: 12000, moves: 15, grid: 8 },
+            { target: 14000, moves: 15, grid: 8 },
+            { target: 16000, moves: 14, grid: 8 },
+            { target: 20000, moves: 14, grid: 8 },
+        ];
+        
+        // ============ 存档系统 ============
+        function saveGame() {
+            const saveData = {
+                currentLevel: currentLevel,
+                highScores: highScores,
+                tutorialDone: tutorialDone
+            };
+            localStorage.setItem('mangoMatchSave', JSON.stringify(saveData));
+        }
+        
+        function loadGame() {
+            const saved = localStorage.getItem('mangoMatchSave');
+            if (saved) {
+                const data = JSON.parse(saved);
+                currentLevel = data.currentLevel || 0;
+                highScores = data.highScores || {};
+                tutorialDone = data.tutorialDone || false;
+            }
+        }
+        
+        // ============ 游戏配置 ============
+        let GRID_SIZE = 7;
+        const CELL_SIZE = 50;
+        const PADDING = 5;
+        
+        // 魔兽萌宠
+        const CREATURES = [
+            { emoji: '🐸', name: '小鱼人', color: '#4CAF50' },
+            { emoji: '🦊', name: '小狐狸', color: '#FF9800' },
+            { emoji: '🐻', name: '小熊熊', color: '#795548' },
+            { emoji: '🐰', name: '月兔兔', color: '#E91E63' },
+            { emoji: '🦉', name: '猫头鹰', color: '#9C27B0' },
+            { emoji: '🐲', name: '小龙崽', color: '#F44336' }
+        ];
+        
+        const SUMMON_PETS = ['🦄', '🐉', '🦋', '🌟', '💎', '🔮', '👑', '🎀'];
+        
+        // 游戏状态
+        let grid = [];
+        let score = 0;
+        let combo = 0;
+        let movesLeft = 20;
+        let currentLevel = 0;
+        let targetScore = 500;
+        let highScores = {};
+        let tutorialDone = false;
+        let selected = null;
+        let isAnimating = false;
+        let touchStart = null;
+        
+        // Canvas设置
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function updateCanvasSize() {
+            const size = GRID_SIZE * CELL_SIZE + PADDING * 2;
+            canvas.width = size;
+            canvas.height = size;
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            loadGame();
+            
+            // 检查是否需要教程
+            if (!tutorialDone) {
+                document.getElementById('tutorialOverlay').classList.add('show');
+            } else {
+                startLevel(currentLevel);
+            }
+        }
+        
+        function startLevel(levelIndex) {
+            if (levelIndex >= LEVELS.length) {
+                levelIndex = LEVELS.length - 1; // 最高关卡
+            }
+            
+            currentLevel = levelIndex;
+            const level = LEVELS[levelIndex];
+            
+            GRID_SIZE = level.grid;
+            targetScore = level.target;
+            movesLeft = level.moves;
+            score = 0;
+            combo = 0;
+            
+            updateCanvasSize();
+            
+            grid = [];
+            for (let row = 0; row < GRID_SIZE; row++) {
+                grid[row] = [];
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    grid[row][col] = getRandomCreature(row, col);
+                }
+            }
+            
+            // 确保初始没有匹配
+            while (findMatches().length > 0) {
+                for (let row = 0; row < GRID_SIZE; row++) {
+                    for (let col = 0; col < GRID_SIZE; col++) {
+                        grid[row][col] = getRandomCreature(row, col);
+                    }
+                }
+            }
+            
+            updateUI();
+            render();
+            saveGame();
+        }
+        
+        function getRandomCreature(row, col) {
+            let creature;
+            let attempts = 0;
+            do {
+                creature = Math.floor(Math.random() * CREATURES.length);
+                attempts++;
+            } while (attempts < 50 && wouldMatch(row, col, creature));
+            return creature;
+        }
+        
+        function wouldMatch(row, col, creature) {
+            if (col >= 2 && 
+                grid[row][col-1] === creature && 
+                grid[row][col-2] === creature) {
+                return true;
+            }
+            if (row >= 2 && 
+                grid[row-1] && grid[row-1][col] === creature && 
+                grid[row-2] && grid[row-2][col] === creature) {
+                return true;
+            }
+            return false;
+        }
+        
+        function render() {
+            const canvasSize = GRID_SIZE * CELL_SIZE + PADDING * 2;
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+            
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * CELL_SIZE + PADDING;
+                    const y = row * CELL_SIZE + PADDING;
+                    const creature = grid[row][col];
+                    
+                    if (creature !== null && creature !== undefined) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                        ctx.beginPath();
+                        ctx.roundRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4, 10);
+                        ctx.fill();
+                        
+                        if (selected && selected.row === row && selected.col === col) {
+                            ctx.strokeStyle = '#ff6b6b';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.roundRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4, 10);
+                            ctx.stroke();
+                        }
+                        
+                        ctx.font = '32px serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(CREATURES[creature].emoji, x + CELL_SIZE/2, y + CELL_SIZE/2 + 2);
+                    }
+                }
+            }
+        }
+        
+        function getCellFromEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            const col = Math.floor((x - PADDING) / CELL_SIZE);
+            const row = Math.floor((y - PADDING) / CELL_SIZE);
+            
+            if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+                return { row, col };
+            }
+            return null;
+        }
+        
+        function isAdjacent(cell1, cell2) {
+            const rowDiff = Math.abs(cell1.row - cell2.row);
+            const colDiff = Math.abs(cell1.col - cell2.col);
+            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+        }
+        
+        function swap(cell1, cell2) {
+            const temp = grid[cell1.row][cell1.col];
+            grid[cell1.row][cell1.col] = grid[cell2.row][cell2.col];
+            grid[cell2.row][cell2.col] = temp;
+        }
+        
+        function findMatches() {
+            const matches = new Set();
+            
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE - 2; col++) {
+                    const creature = grid[row][col];
+                    if (creature !== null && 
+                        creature === grid[row][col+1] && 
+                        creature === grid[row][col+2]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row},${col+1}`);
+                        matches.add(`${row},${col+2}`);
+                        let k = col + 3;
+                        while (k < GRID_SIZE && grid[row][k] === creature) {
+                            matches.add(`${row},${k}`);
+                            k++;
+                        }
+                    }
+                }
+            }
+            
+            for (let col = 0; col < GRID_SIZE; col++) {
+                for (let row = 0; row < GRID_SIZE - 2; row++) {
+                    const creature = grid[row][col];
+                    if (creature !== null && 
+                        creature === grid[row+1][col] && 
+                        creature === grid[row+2][col]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row+1},${col}`);
+                        matches.add(`${row+2},${col}`);
+                        let k = row + 3;
+                        while (k < GRID_SIZE && grid[k][col] === creature) {
+                            matches.add(`${k},${col}`);
+                            k++;
+                        }
+                    }
+                }
+            }
+            
+            return Array.from(matches).map(pos => {
+                const [row, col] = pos.split(',').map(Number);
+                return { row, col };
+            });
+        }
+        
+        async function handleMove(cell1, cell2) {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            playSwapSound();
+            swap(cell1, cell2);
+            render();
+            
+            const matches = findMatches();
+            if (matches.length === 0) {
+                playInvalidSound();
+                await sleep(200);
+                swap(cell1, cell2);
+                render();
+                combo = 0;
+            } else {
+                movesLeft--;
+                combo = 0;
+                await processMatches();
+                
+                // 检查游戏状态
+                checkGameState();
+            }
+            
+            updateUI();
+            selected = null;
+            isAnimating = false;
+        }
+        
+        async function processMatches() {
+            let matches = findMatches();
+            
+            while (matches.length > 0) {
+                combo++;
+                
+                playMatchSound();
+                if (combo >= 2) {
+                    playComboSound(combo);
+                }
+                
+                const baseScore = matches.length * 10;
+                const comboBonus = combo > 1 ? combo * 5 : 0;
+                const matchScore = baseScore + comboBonus;
+                score += matchScore;
+                
+                if (combo >= 2) {
+                    showComboText(combo);
+                }
+                
+                if (combo >= 3) {
+                    summonPet();
+                }
+                
+                updateUI();
+                
+                for (const match of matches) {
+                    grid[match.row][match.col] = null;
+                }
+                render();
+                await sleep(200);
+                
+                await dropCells();
+                fillEmptyCells();
+                render();
+                await sleep(150);
+                
+                matches = findMatches();
+            }
+        }
+        
+        async function dropCells() {
+            let dropped = false;
+            
+            for (let col = 0; col < GRID_SIZE; col++) {
+                let emptyRow = GRID_SIZE - 1;
+                
+                for (let row = GRID_SIZE - 1; row >= 0; row--) {
+                    if (grid[row][col] !== null) {
+                        if (row !== emptyRow) {
+                            grid[emptyRow][col] = grid[row][col];
+                            grid[row][col] = null;
+                            dropped = true;
+                        }
+                        emptyRow--;
+                    }
+                }
+            }
+            
+            if (dropped) {
+                render();
+                await sleep(100);
+            }
+        }
+        
+        function fillEmptyCells() {
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    if (grid[row][col] === null) {
+                        grid[row][col] = Math.floor(Math.random() * CREATURES.length);
+                    }
+                }
+            }
+        }
+        
+        function checkGameState() {
+            if (score >= targetScore) {
+                // 过关！
+                playLevelUpSound();
+                showLevelComplete();
+            } else if (movesLeft <= 0) {
+                // 失败
+                playFailSound();
+                showLevelFail();
+            }
+        }
+        
+        function showLevelComplete() {
+            const stars = score >= targetScore * 2 ? 3 : score >= targetScore * 1.5 ? 2 : 1;
+            const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+            
+            document.getElementById('starRating').textContent = starStr;
+            document.getElementById('modalTitle').textContent = stars === 3 ? '完美通关！' : stars === 2 ? '太棒了！' : '通关！';
+            document.getElementById('modalText').textContent = `你完成了第 ${currentLevel + 1} 关！得分: ${score}`;
+            document.getElementById('modalEmoji').textContent = stars === 3 ? '🏆' : '🎉';
+            
+            // 保存最高分
+            if (!highScores[currentLevel] || score > highScores[currentLevel]) {
+                highScores[currentLevel] = score;
+            }
+            
+            document.getElementById('levelModal').classList.add('show');
+            saveGame();
+        }
+        
+        function showLevelFail() {
+            document.getElementById('failModal').classList.add('show');
+        }
+        
+        function showComboText(comboNum) {
+            const text = document.createElement('div');
+            text.className = 'combo-text';
+            text.textContent = `${comboNum}连击！✨`;
+            text.style.left = `${Math.random() * 200 + 100}px`;
+            text.style.top = `${Math.random() * 200 + 200}px`;
+            document.body.appendChild(text);
+            
+            setTimeout(() => text.remove(), 800);
+        }
+        
+        function summonPet() {
+            const pet = document.createElement('div');
+            pet.className = 'pet-summon';
+            pet.textContent = SUMMON_PETS[Math.floor(Math.random() * SUMMON_PETS.length)];
+            pet.style.left = `${Math.random() * 200 + 100}px`;
+            pet.style.top = `${Math.random() * 200 + 200}px`;
+            document.body.appendChild(pet);
+            
+            setTimeout(() => pet.remove(), 1000);
+        }
+        
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('target').textContent = targetScore;
+            document.getElementById('combo').textContent = combo;
+            document.getElementById('levelBadge').textContent = `第 ${currentLevel + 1} 关`;
+            document.getElementById('movesLeft').textContent = `步数: ${movesLeft}`;
+            
+            const progress = Math.min(100, (score / targetScore) * 100);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${score} / ${targetScore}`;
+        }
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            
+            setTimeout(() => {
+                msg.className = 'message';
+            }, 2000);
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // 事件监听
+        canvas.addEventListener('mousedown', (e) => {
+            initAudio();
+            if (isAnimating) return;
+            const cell = getCellFromEvent(e);
+            if (!cell) return;
+            
+            if (!selected) {
+                selected = cell;
+                render();
+            } else if (selected.row === cell.row && selected.col === cell.col) {
+                selected = null;
+                render();
+            } else if (isAdjacent(selected, cell)) {
+                handleMove(selected, cell);
+            } else {
+                selected = cell;
+                render();
+            }
+        });
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudio();
+            if (isAnimating) return;
+            const cell = getCellFromEvent(e);
+            if (!cell) return;
+            
+            touchStart = cell;
+            
+            if (!selected) {
+                selected = cell;
+                render();
+            }
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isAnimating || !touchStart) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.changedTouches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            const col = Math.floor((x - PADDING) / CELL_SIZE);
+            const row = Math.floor((y - PADDING) / CELL_SIZE);
+            
+            if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+                const cell = { row, col };
+                
+                if (selected && isAdjacent(selected, cell)) {
+                    handleMove(selected, cell);
+                } else if (selected && selected.row === cell.row && selected.col === cell.col) {
+                    selected = null;
+                    render();
+                } else {
+                    selected = cell;
+                    render();
+                }
+            }
+            
+            touchStart = null;
+        });
+        
+        // 按钮事件
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+            initAudio();
+            tutorialDone = true;
+            saveGame();
+            document.getElementById('tutorialOverlay').classList.remove('show');
+            startLevel(0);
+        });
+        
+        document.getElementById('nextLevelBtn').addEventListener('click', () => {
+            document.getElementById('levelModal').classList.remove('show');
+            startLevel(currentLevel + 1);
+        });
+        
+        document.getElementById('retryBtn').addEventListener('click', () => {
+            document.getElementById('levelModal').classList.remove('show');
+            startLevel(currentLevel);
+        });
+        
+        document.getElementById('retryBtn2').addEventListener('click', () => {
+            document.getElementById('failModal').classList.remove('show');
+            startLevel(currentLevel);
+        });
+        
+        document.getElementById('soundToggle').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggle').textContent = soundEnabled ? '🔊' : '🔇';
+        });
+        
+        // roundRect polyfill
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+        
+        // 启动游戏
+        initGame();
+    </script>
+</body>
+</html>
