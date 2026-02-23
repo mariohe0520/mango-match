@@ -2,273 +2,964 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0f0f1a">
-<title>🥭 芒果消消乐 — Mango Match</title>
-<link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/animations.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🥭 芒果消消乐</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(135deg,#FFE5EC 0%,#FFC3D4 50%,#FFDEE9 100%);min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,0.4) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(255,182,193,0.3) 0%,transparent 60%);pointer-events:none;z-index:0}
+.game-container{background:rgba(255,255,255,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:28px;padding:18px;box-shadow:0 8px 32px rgba(255,150,170,0.25),0 2px 8px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.8);max-width:420px;width:95%;position:relative;z-index:1;border:1px solid rgba(255,255,255,0.6)}
+.header{text-align:center;margin-bottom:12px}
+.title{font-size:1.7em;font-weight:800;background:linear-gradient(135deg,#FF6B8A 0%,#FF4F7B 50%,#E84393 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px}
+.subtitle{font-size:0.82em;color:#D4739A;margin-top:2px;letter-spacing:0.5px}
+.level-info{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:10px}
+.level-badge{background:linear-gradient(135deg,#FF6B8A,#E84393);color:white;padding:5px 16px;border-radius:20px;font-weight:bold;font-size:0.9em;box-shadow:0 2px 8px rgba(232,67,147,0.3)}
+.moves-left{background:linear-gradient(135deg,#FFA502,#FF6348);color:white;padding:5px 16px;border-radius:20px;font-weight:bold;font-size:0.9em;box-shadow:0 2px 8px rgba(255,99,72,0.3)}
+.stats{display:flex;justify-content:space-around;margin-bottom:10px;gap:8px}
+.stat-box{background:linear-gradient(135deg,rgba(255,182,193,0.4),rgba(255,218,225,0.6));padding:7px 12px;border-radius:16px;text-align:center;flex:1;border:1px solid rgba(255,255,255,0.5)}
+.stat-label{font-size:0.65em;color:#C06080;text-transform:uppercase;font-weight:600;letter-spacing:0.5px}
+.stat-value{font-size:1.15em;font-weight:bold;color:#D4437B}
+.progress-container{background:rgba(255,200,210,0.4);border-radius:12px;height:22px;margin-bottom:12px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.5)}
+.progress-bar{height:100%;background:linear-gradient(90deg,#FF6B8A,#E84393,#FF4F7B);border-radius:12px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);width:0%;position:relative}
+.progress-bar::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,0.35),transparent);border-radius:12px 12px 0 0}
+.progress-text{position:absolute;width:100%;text-align:center;line-height:22px;font-size:0.75em;font-weight:bold;color:#8B3060;top:0}
+#gameCanvas{display:block;margin:0 auto;border-radius:18px;touch-action:none}
+.footer{text-align:center;margin-top:12px;font-size:0.78em;color:#D4739A}
+.footer span{color:#E84393;font-weight:600}
+.btn{padding:10px 28px;border:none;border-radius:25px;font-size:1em;font-weight:bold;cursor:pointer;margin:5px;transition:all 0.2s;letter-spacing:0.5px;position:relative;overflow:hidden}
+.btn:active{transform:scale(0.95)}
+.btn-primary{background:linear-gradient(135deg,#FF6B8A,#E84393);color:white;box-shadow:0 4px 15px rgba(232,67,147,0.35)}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(232,67,147,0.45)}
+.btn-secondary{background:linear-gradient(135deg,rgba(255,182,193,0.5),rgba(255,218,225,0.7));color:#C04070;border:1px solid rgba(255,150,170,0.3)}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2000;justify-content:center;align-items:center}
+.modal.show{display:flex}
+.modal-content{background:linear-gradient(135deg,#FFF5F7,#FFFFFF);padding:30px;border-radius:28px;text-align:center;max-width:340px;width:85%;animation:modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,0.8)}
+@keyframes modalIn{from{transform:scale(0.5) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-title{font-size:1.5em;margin-bottom:12px;color:#D4437B;font-weight:800}
+.modal-emoji{font-size:3.5em;margin-bottom:12px}
+.star-rating{font-size:2em;margin:12px 0}
+.modal p{color:#8B5070;line-height:1.5}
+.sound-toggle{position:absolute;top:12px;right:14px;font-size:1.3em;cursor:pointer;z-index:100;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.6);border-radius:50%;border:1px solid rgba(255,200,210,0.4)}
+.tutorial-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:3000;justify-content:center;align-items:center}
+.tutorial-overlay.show{display:flex}
+.tutorial-box{background:linear-gradient(135deg,#FFF5F7,#FFFFFF);padding:28px;border-radius:28px;text-align:center;max-width:320px;width:85%;animation:modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.tutorial-step{font-size:1em;margin:14px 0;line-height:1.7;color:#8B5070}
+.tutorial-gems{display:flex;justify-content:center;gap:6px;margin:12px 0}
+.tutorial-gem{width:32px;height:32px;border-radius:50%}
+</style>
 </head>
 <body>
-
-<div class="app">
-
-  <!-- ======== TOP HEADER ======== -->
-  <div class="top-header">
-    <span class="logo">🥭 芒果消消乐</span>
-    <div class="header-actions">
-      <button class="icon-btn" id="soundToggle">🔊</button>
-    </div>
-  </div>
-
-  <!-- ======== PAGE: HOME ======== -->
-  <div class="page active" id="page-home">
-    <div class="home-hero">
-      <div class="hero-emoji">🥭</div>
-      <h2>芒果消消乐</h2>
-      <p class="subtitle">小芒的热带冒险 ✨</p>
-    </div>
-
-    <div class="home-stats">
-      <div class="stat-card">
-        <div class="stat-icon">⭐</div>
-        <div class="stat-val" id="homeStars">0</div>
-        <div class="stat-lbl">星星</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🗺️</div>
-        <div class="stat-val" id="homeLevels">0</div>
-        <div class="stat-lbl">通关</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🔥</div>
-        <div class="stat-val" id="homeStreak">0</div>
-        <div class="stat-lbl">连续</div>
-      </div>
-    </div>
-
-    <div class="home-actions">
-      <div class="action-card" id="continueCard" onclick="App.navigateTo('adventure')">
-        <span class="action-icon">🗺️</span>
-        <div class="action-info">
-          <span class="action-title">继续冒险</span>
-          <span class="action-desc">芒果岛 — 第1关</span>
-        </div>
-        <span class="action-arrow">›</span>
-      </div>
-
-      <div class="action-card" id="dailyChallengeCard" onclick="App.startDailyChallenge()">
-        <span class="action-icon">📅</span>
-        <div class="action-info">
-          <span class="action-title">每日挑战</span>
-          <span class="action-desc">🎯 今日挑战等你来！</span>
-        </div>
-        <span class="action-arrow">›</span>
-      </div>
-
-      <div class="action-card" onclick="App.navigateTo('garden')">
-        <span class="action-icon">🌱</span>
-        <div class="action-info">
-          <span class="action-title">我的花园</span>
-          <span class="action-desc">种植、浇水、收获</span>
-        </div>
-        <span class="action-arrow">›</span>
-      </div>
-    </div>
-
-    <div class="home-footer">
-      专属于 <span>芒果过敏</span> 的小游戏 💕
-    </div>
-  </div>
-
-  <!-- ======== PAGE: ADVENTURE (MAP) ======== -->
-  <div class="page" id="page-adventure">
-    <h3 style="padding:8px 0;font-weight:700;">🗺️ 冒险之旅</h3>
-    <div id="islandList" class="island-list"></div>
-  </div>
-
-  <!-- ======== PAGE: GAME ======== -->
-  <div class="page" id="page-game">
-    <div class="game-header">
-      <span class="back-btn" id="gameBackBtn" style="font-size:1.3em;cursor:pointer;">← </span>
-      <span class="game-level-badge" id="gameLevelBadge">🏝️ 1</span>
-      <span class="game-moves" id="gameMoves">步数: 25</span>
-    </div>
-
-    <div class="game-stats">
-      <div class="game-stat">
-        <div class="gs-label">分数</div>
-        <div class="gs-value" id="gameScore">0</div>
-      </div>
-      <div class="game-stat">
-        <div class="gs-label">目标</div>
-        <div class="gs-value" id="gameTarget">500</div>
-      </div>
-      <div class="game-stat">
-        <div class="gs-label">连击</div>
-        <div class="gs-value" id="gameCombo">0</div>
-      </div>
-    </div>
-
-    <div class="game-progress">
-      <div class="game-progress-bar" id="gameProgressBar" style="width:0%"></div>
-      <div class="game-progress-text" id="gameProgressText">0 / 500</div>
-    </div>
-
-    <div id="boardContainer">
-      <canvas id="gameCanvas"></canvas>
-    </div>
-
-    <div class="game-potions">
-      <button class="potion-btn" id="potionBtn_shuffle" title="回旋药水">
-        🔄<span class="potion-count">0</span>
-      </button>
-      <button class="potion-btn" id="potionBtn_time" title="时间药水">
-        ⏰<span class="potion-count">0</span>
-      </button>
-      <button class="potion-btn" id="potionBtn_bomb" title="爆破药水">
-        💥<span class="potion-count">0</span>
-      </button>
-      <button class="potion-btn" id="potionBtn_rainbow" title="彩虹药水">
-        🌈<span class="potion-count">0</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ======== PAGE: GARDEN ======== -->
-  <div class="page" id="page-garden">
-    <div id="gardenContainer"></div>
-  </div>
-
-  <!-- ======== PAGE: POTION ======== -->
-  <div class="page" id="page-potion">
-    <h3 style="padding:8px 0;font-weight:700;">🧪 药水工坊</h3>
-    <div id="potionContainer"></div>
-  </div>
-
-  <!-- ======== PAGE: ACHIEVEMENTS ======== -->
-  <div class="page" id="page-achievement">
-    <div id="achievementContainer"></div>
-  </div>
-
+<div class="game-container">
+<span class="sound-toggle" id="soundToggle">🔊</span>
+<div class="header">
+<h1 class="title">🥭 芒果消消乐</h1>
+<p class="subtitle">魔兽萌宠版 ✨</p>
+</div>
+<div class="level-info">
+<span class="level-badge" id="levelBadge">第 1 关</span>
+<span class="moves-left" id="movesLeft">步数: 25</span>
+</div>
+<div class="stats">
+<div class="stat-box"><div class="stat-label">分数</div><div class="stat-value" id="score">0</div></div>
+<div class="stat-box"><div class="stat-label">目标</div><div class="stat-value" id="target">500</div></div>
+<div class="stat-box"><div class="stat-label">连击</div><div class="stat-value" id="combo">0</div></div>
+</div>
+<div class="progress-container">
+<div class="progress-bar" id="progressBar"></div>
+<div class="progress-text" id="progressText">0 / 500</div>
+</div>
+<canvas id="gameCanvas"></canvas>
+<div class="footer">专属于 <span>芒果过敏</span> 的小游戏 💕</div>
 </div>
 
-<!-- ======== BOTTOM NAVIGATION ======== -->
-<nav class="bottom-nav">
-  <button class="nav-item active" data-page="home">
-    <span class="nav-icon">🏠</span>
-    主页
-  </button>
-  <button class="nav-item" data-page="adventure">
-    <span class="nav-icon">🗺️</span>
-    冒险
-  </button>
-  <button class="nav-item" data-page="garden">
-    <span class="nav-icon">🌱</span>
-    花园
-  </button>
-  <button class="nav-item" data-page="potion">
-    <span class="nav-icon">🧪</span>
-    药水
-  </button>
-  <button class="nav-item" data-page="achievement">
-    <span class="nav-icon">🏆</span>
-    成就
-  </button>
-</nav>
-
-<!-- ======== MODALS ======== -->
-
-<!-- Level Complete -->
-<div class="modal-overlay" id="completeModal">
-  <div class="modal-content">
-    <div class="modal-emoji" id="completeEmoji">🎉</div>
-    <div class="modal-title" id="completeTitle">太棒了！</div>
-    <div class="modal-stars" id="completeStars">⭐⭐⭐</div>
-    <p class="modal-text" id="completeText">你完成了第 1 关！</p>
-    <p class="modal-text text-accent" id="completeSeedInfo">🌱 获得 2 颗种子！</p>
-    <div class="modal-buttons">
-      <button class="btn btn-primary" id="nextLevelBtn">下一关 →</button>
-      <button class="btn btn-secondary" onclick="App.hideModal('completeModal'); App.navigateTo('home');">主页</button>
-    </div>
-  </div>
+<div class="modal" id="levelModal">
+<div class="modal-content">
+<div class="modal-emoji" id="modalEmoji">🎉</div>
+<div class="modal-title" id="modalTitle">太棒了！</div>
+<div class="star-rating" id="starRating">⭐⭐⭐</div>
+<p id="modalText">你完成了第 1 关！</p>
+<br>
+<button class="btn btn-primary" id="nextLevelBtn">下一关 →</button>
+<button class="btn btn-secondary" id="retryBtn">重玩</button>
+</div>
 </div>
 
-<!-- Level Fail -->
-<div class="modal-overlay" id="failModal">
-  <div class="modal-content">
-    <div class="modal-emoji">💪</div>
-    <div class="modal-title">差一点点！</div>
-    <p class="modal-text">不要放弃，再来一次！</p>
-    <div class="modal-buttons">
-      <button class="btn btn-primary" id="retryBtn">再来一次 💕</button>
-      <button class="btn btn-secondary" id="failHomeBtn">主页</button>
-    </div>
-  </div>
+<div class="modal" id="failModal">
+<div class="modal-content">
+<div class="modal-emoji">💪</div>
+<div class="modal-title">差一点点！</div>
+<p>步数用完了，再试一次吧！</p>
+<br>
+<button class="btn btn-primary" id="retryBtn2">再来一次 💕</button>
+</div>
 </div>
 
-<!-- Quit Confirmation -->
-<div class="modal-overlay" id="quitModal">
-  <div class="modal-content">
-    <div class="modal-emoji">🤔</div>
-    <div class="modal-title">确定退出？</div>
-    <p class="modal-text">当前进度将不会保存</p>
-    <div class="modal-buttons">
-      <button class="btn btn-danger" onclick="App.hideModal('quitModal'); App.navigateTo('home');">退出</button>
-      <button class="btn btn-secondary" onclick="App.hideModal('quitModal');">继续</button>
-    </div>
-  </div>
+<div class="tutorial-overlay" id="tutorialOverlay">
+<div class="tutorial-box">
+<div class="modal-emoji">👆</div>
+<div class="modal-title">欢迎来到芒果消消乐！</div>
+<div class="tutorial-step">
+1️⃣ 点击一个宝石选中它<br>
+2️⃣ 再点击相邻的宝石交换<br>
+3️⃣ 三个相同的消除得分！<br>
+4️⃣ 在步数用完前达到目标分数
+</div>
+<div class="tutorial-gems" id="tutorialGems"></div>
+<button class="btn btn-primary" id="startGameBtn">开始游戏！</button>
+</div>
 </div>
 
-<!-- Seed Picker -->
-<div class="modal-overlay" id="seedModal">
-  <div class="modal-content">
-    <div class="modal-title">🌰 选择种子</div>
-    <div id="seedPickerContent"></div>
-    <div class="modal-buttons mt-8">
-      <button class="btn btn-secondary" onclick="App.hideModal('seedModal')">取消</button>
-    </div>
-  </div>
-</div>
+<script>
+'use strict';
 
-<!-- Dialogue -->
-<div class="modal-overlay" id="dialogueOverlay">
-  <div class="dialogue-box">
-    <div class="dialogue-portrait" id="dialoguePortrait">🥭</div>
-    <div class="dialogue-speaker" id="dialogueSpeaker">小芒</div>
-    <div class="dialogue-text" id="dialogueText">...</div>
-    <div class="dialogue-tap">点击继续 ›</div>
-  </div>
-</div>
+// ============ 宝石定义 ============
+const GEMS = [
+  { name:'红宝石', c1:'#FF6B6B', c2:'#FF4757' },
+  { name:'橙宝石', c1:'#FFA502', c2:'#FF6348' },
+  { name:'绿宝石', c1:'#7BED9F', c2:'#2ED573' },
+  { name:'蓝宝石', c1:'#70A1FF', c2:'#5352ED' },
+  { name:'紫宝石', c1:'#A29BFE', c2:'#6C5CE7' },
+  { name:'黄宝石', c1:'#FECA57', c2:'#FF9F43' }
+];
 
-<!-- Tutorial -->
-<div class="modal-overlay" id="tutorialOverlay">
-  <div class="modal-content">
-    <div class="modal-emoji">🥭</div>
-    <div class="modal-title">欢迎来到芒果消消乐！</div>
-    <div class="tutorial-step">
-      1️⃣ 点击一个宝石选中它<br>
-      2️⃣ 再点击相邻的宝石交换<br>
-      3️⃣ 三个相同的消除得分！<br>
-      4️⃣ 在步数用完前达到目标 ✨<br>
-      5️⃣ 通关后获得种子种在花园里 🌱
-    </div>
-    <div class="tutorial-gems" id="tutorialGems"></div>
-    <button class="btn btn-primary btn-block" id="startGameBtn">开始冒险！🥭</button>
-  </div>
-</div>
+// ============ 音效系统 ============
+const ACx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null, soundEnabled = true;
 
-<!-- ======== SCRIPTS (load order matters) ======== -->
-<script src="js/audio.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/gems.js"></script>
-<script src="js/board.js"></script>
-<script src="js/campaign.js"></script>
-<script src="js/garden.js"></script>
-<script src="js/potion.js"></script>
-<script src="js/daily.js"></script>
-<script src="js/app.js"></script>
+function initAudio(){if(!audioCtx)audioCtx=new ACx()}
 
+function playTone(freq,dur,type='sine',vol=0.3){
+  if(!soundEnabled||!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.connect(g);g.connect(audioCtx.destination);
+  o.frequency.value=freq;o.type=type;
+  g.gain.setValueAtTime(vol,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+dur);
+  o.start(audioCtx.currentTime);o.stop(audioCtx.currentTime+dur);
+}
+function playMatchSound(){playTone(523,0.1);setTimeout(()=>playTone(659,0.1),50);setTimeout(()=>playTone(784,0.15),100)}
+function playComboSound(n){const b=400+n*50;playTone(b,0.1,'square',0.2);setTimeout(()=>playTone(b*1.25,0.1,'square',0.2),80);setTimeout(()=>playTone(b*1.5,0.2,'square',0.25),160)}
+function playLevelUpSound(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'sine',0.3),i*100))}
+function playFailSound(){playTone(300,0.3,'sawtooth',0.2);setTimeout(()=>playTone(250,0.4,'sawtooth',0.2),200)}
+function playSwapSound(){playTone(440,0.08,'sine',0.15)}
+function playInvalidSound(){playTone(200,0.15,'square',0.1)}
+function playSelectSound(){playTone(660,0.06,'sine',0.12)}
+
+// ============ 关卡系统 ============
+const LEVELS=[
+  {target:500,moves:25,grid:7},{target:800,moves:25,grid:7},{target:1200,moves:25,grid:7},
+  {target:1500,moves:22,grid:7},{target:2000,moves:22,grid:7},{target:2500,moves:20,grid:7},
+  {target:3000,moves:20,grid:7},{target:3500,moves:20,grid:8},{target:4000,moves:18,grid:8},
+  {target:4500,moves:18,grid:8},{target:5000,moves:18,grid:8},{target:6000,moves:18,grid:8},
+  {target:7000,moves:16,grid:8},{target:8000,moves:16,grid:8},{target:9000,moves:16,grid:8},
+  {target:10000,moves:15,grid:8},{target:12000,moves:15,grid:8},{target:14000,moves:15,grid:8},
+  {target:16000,moves:14,grid:8},{target:20000,moves:14,grid:8}
+];
+
+// ============ 存档系统 ============
+function saveGame(){
+  localStorage.setItem('mangoMatchSave',JSON.stringify({
+    currentLevel,highScores,tutorialDone
+  }));
+}
+function loadGame(){
+  try{
+    const d=JSON.parse(localStorage.getItem('mangoMatchSave'));
+    if(d){currentLevel=d.currentLevel||0;highScores=d.highScores||{};tutorialDone=d.tutorialDone||false}
+  }catch(e){}
+}
+
+// ============ 游戏状态 ============
+let GRID_SIZE=7, CELL_SIZE=50, PADDING=4;
+let grid=[], score=0, combo=0, movesLeft=25;
+let currentLevel=0, targetScore=500, highScores={}, tutorialDone=false;
+let selected=null, gamePhase='idle'; // idle | animating | gameover
+let touchStart=null;
+
+// ============ 动画系统 ============
+let animations=[];   // {update(t)->bool, render(ctx)->void}
+let particles=[];    // {x,y,vx,vy,r,color,alpha,life,maxLife}
+let floatTexts=[];   // {x,y,text,alpha,life,maxLife,scale,color,vy}
+let shakeAmount=0, shakeDecay=0.9;
+let lastTime=0;
+
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+
+// Grid cell visual positions (for animations)
+// cellVisual[row][col] = {x, y, scale, alpha} — current visual state
+let cellVisual=[];
+
+function initCellVisual(){
+  cellVisual=[];
+  for(let r=0;r<GRID_SIZE;r++){
+    cellVisual[r]=[];
+    for(let c=0;c<GRID_SIZE;c++){
+      cellVisual[r][c]={x:c*CELL_SIZE+PADDING, y:r*CELL_SIZE+PADDING, scale:1, alpha:1};
+    }
+  }
+}
+
+function updateCanvasSize(){
+  const container=document.querySelector('.game-container');
+  const maxW=container.clientWidth-36;
+  CELL_SIZE=Math.floor(Math.min(50, (maxW-PADDING*2)/GRID_SIZE));
+  const size=GRID_SIZE*CELL_SIZE+PADDING*2;
+  canvas.width=size;
+  canvas.height=size;
+  canvas.style.width=size+'px';
+  canvas.style.height=size+'px';
+  initCellVisual();
+}
+
+// ============ 宝石绘制 ============
+function drawGem(ctx,x,y,size,gemIdx,scale,alpha){
+  if(gemIdx===null||gemIdx===undefined||alpha<=0)return;
+  const g=GEMS[gemIdx];
+  const cx=x+size/2, cy=y+size/2;
+  const r=size*0.38*scale;
+  if(r<=0)return;
+  
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  
+  // 底部阴影
+  ctx.beginPath();
+  ctx.arc(cx+1, cy+2, r*0.92, 0, Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.1)';
+  ctx.fill();
+  
+  // 主体渐变
+  const grad=ctx.createRadialGradient(cx-r*0.3, cy-r*0.3, r*0.05, cx, cy, r);
+  grad.addColorStop(0, g.c1);
+  grad.addColorStop(1, g.c2);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.fillStyle=grad;
+  ctx.fill();
+  
+  // 内环光泽
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.82, 0, Math.PI*2);
+  const inner=ctx.createRadialGradient(cx-r*0.2, cy-r*0.2, r*0.05, cx, cy, r*0.82);
+  inner.addColorStop(0,'rgba(255,255,255,0.2)');
+  inner.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=inner;
+  ctx.fill();
+  
+  // 高光
+  ctx.beginPath();
+  ctx.ellipse(cx-r*0.2, cy-r*0.22, r*0.32, r*0.22, -0.3, 0, Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fill();
+  
+  // 小高光点
+  ctx.beginPath();
+  ctx.arc(cx-r*0.35, cy-r*0.35, r*0.08, 0, Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.fill();
+  
+  ctx.restore();
+}
+
+// ============ 绘制选中框 ============
+function drawSelection(ctx,x,y,size,t){
+  const pulse=0.5+0.5*Math.sin(t*0.005);
+  const cx=x+size/2, cy=y+size/2;
+  const r=size*0.44;
+  
+  ctx.save();
+  ctx.strokeStyle=`rgba(255,80,120,${0.5+0.3*pulse})`;
+  ctx.lineWidth=2.5;
+  ctx.setLineDash([4,3]);
+  ctx.lineDashOffset=-t*0.02;
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // glow
+  ctx.beginPath();
+  ctx.arc(cx,cy,r+3,0,Math.PI*2);
+  ctx.strokeStyle=`rgba(255,100,150,${0.15+0.1*pulse})`;
+  ctx.lineWidth=6;
+  ctx.stroke();
+  
+  ctx.restore();
+}
+
+// ============ 粒子系统 ============
+function spawnParticles(cx,cy,gemIdx,count){
+  const g=GEMS[gemIdx]||GEMS[0];
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=80+Math.random()*160;
+    particles.push({
+      x:cx, y:cy,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed-60,
+      r:2+Math.random()*3,
+      color:Math.random()>0.5?g.c1:g.c2,
+      alpha:1,
+      life:0,
+      maxLife:0.4+Math.random()*0.4,
+      gravity:300+Math.random()*200,
+      type:Math.random()>0.6?'star':'circle'
+    });
+  }
+}
+
+function spawnScoreText(cx,cy,text,color){
+  floatTexts.push({
+    x:cx,y:cy,text,color:color||'#E84393',
+    alpha:1,life:0,maxLife:0.9,
+    scale:0.3,targetScale:1.1,
+    vy:-60
+  });
+}
+
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.life+=dt;
+    if(p.life>=p.maxLife){particles.splice(i,1);continue}
+    p.vy+=p.gravity*dt;
+    p.x+=p.vx*dt;
+    p.y+=p.vy*dt;
+    p.alpha=1-(p.life/p.maxLife);
+    p.r*=0.995;
+  }
+}
+
+function renderParticles(ctx){
+  for(const p of particles){
+    ctx.save();
+    ctx.globalAlpha=p.alpha;
+    ctx.fillStyle=p.color;
+    if(p.type==='star'){
+      drawStar(ctx,p.x,p.y,p.r);
+    }else{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function drawStar(ctx,x,y,r){
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    const a=Math.PI*2*i/5-Math.PI/2;
+    const a2=a+Math.PI/5;
+    ctx.lineTo(x+Math.cos(a)*r, y+Math.sin(a)*r);
+    ctx.lineTo(x+Math.cos(a2)*r*0.4, y+Math.sin(a2)*r*0.4);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function updateFloatTexts(dt){
+  for(let i=floatTexts.length-1;i>=0;i--){
+    const f=floatTexts[i];
+    f.life+=dt;
+    if(f.life>=f.maxLife){floatTexts.splice(i,1);continue}
+    const t=f.life/f.maxLife;
+    f.y+=f.vy*dt;
+    f.alpha=t<0.2?t/0.2:1-(t-0.2)/0.8;
+    f.scale+=(f.targetScale-f.scale)*0.15;
+    if(t>0.3)f.targetScale=0.9;
+  }
+}
+
+function renderFloatTexts(ctx){
+  for(const f of floatTexts){
+    ctx.save();
+    ctx.globalAlpha=f.alpha;
+    ctx.font=`bold ${Math.round(18*f.scale)}px 'Segoe UI',system-ui,sans-serif`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    // shadow
+    ctx.fillStyle='rgba(255,255,255,0.8)';
+    ctx.fillText(f.text,f.x+1,f.y+1);
+    ctx.fillStyle=f.color;
+    ctx.fillText(f.text,f.x,f.y);
+    ctx.restore();
+  }
+}
+
+// ============ 动画类 ============
+class SwapAnim{
+  constructor(r1,c1,r2,c2,duration,onDone){
+    this.r1=r1;this.c1=c1;this.r2=r2;this.c2=c2;
+    this.duration=duration;this.elapsed=0;this.onDone=onDone;
+    this.sx1=c1*CELL_SIZE+PADDING;this.sy1=r1*CELL_SIZE+PADDING;
+    this.sx2=c2*CELL_SIZE+PADDING;this.sy2=r2*CELL_SIZE+PADDING;
+  }
+  update(dt){
+    this.elapsed+=dt;
+    let t=Math.min(1,this.elapsed/this.duration);
+    t=t<0.5?2*t*t:(1-Math.pow(-2*t+2,2)/2); // easeInOutQuad
+    cellVisual[this.r1][this.c1].x=this.sx1+(this.sx2-this.sx1)*t;
+    cellVisual[this.r1][this.c1].y=this.sy1+(this.sy2-this.sy1)*t;
+    cellVisual[this.r2][this.c2].x=this.sx2+(this.sx1-this.sx2)*t;
+    cellVisual[this.r2][this.c2].y=this.sy2+(this.sy1-this.sy2)*t;
+    if(this.elapsed>=this.duration){
+      cellVisual[this.r1][this.c1].x=this.sx2;cellVisual[this.r1][this.c1].y=this.sy2;
+      cellVisual[this.r2][this.c2].x=this.sx1;cellVisual[this.r2][this.c2].y=this.sy1;
+      if(this.onDone)this.onDone();
+      return false;
+    }
+    return true;
+  }
+}
+
+class ClearAnim{
+  constructor(cells,duration,onDone){
+    this.cells=cells;this.duration=duration;this.elapsed=0;this.onDone=onDone;
+    this.particlesSpawned=false;
+  }
+  update(dt){
+    this.elapsed+=dt;
+    let t=Math.min(1,this.elapsed/this.duration);
+    // Spawn particles at start
+    if(!this.particlesSpawned){
+      this.particlesSpawned=true;
+      for(const {row,col} of this.cells){
+        const v=cellVisual[row][col];
+        const cx=v.x+CELL_SIZE/2, cy=v.y+CELL_SIZE/2;
+        if(grid[row][col]!==null){
+          spawnParticles(cx,cy,grid[row][col],8+Math.floor(Math.random()*5));
+        }
+      }
+    }
+    for(const {row,col} of this.cells){
+      cellVisual[row][col].scale=1-t;
+      cellVisual[row][col].alpha=1-t*0.8;
+    }
+    if(this.elapsed>=this.duration){
+      for(const {row,col} of this.cells){
+        grid[row][col]=null;
+        cellVisual[row][col].scale=1;
+        cellVisual[row][col].alpha=1;
+      }
+      if(this.onDone)this.onDone();
+      return false;
+    }
+    return true;
+  }
+}
+
+class DropAnim{
+  constructor(drops,duration,onDone){
+    // drops: [{row,col,fromY}]
+    this.drops=drops;this.duration=duration;this.elapsed=0;this.onDone=onDone;
+  }
+  update(dt){
+    this.elapsed+=dt;
+    let t=Math.min(1,this.elapsed/this.duration);
+    // bounce ease out
+    t=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    for(const d of this.drops){
+      const targetY=d.row*CELL_SIZE+PADDING;
+      cellVisual[d.row][d.col].y=d.fromY+(targetY-d.fromY)*t;
+    }
+    if(this.elapsed>=this.duration){
+      for(const d of this.drops){
+        cellVisual[d.row][d.col].y=d.row*CELL_SIZE+PADDING;
+      }
+      if(this.onDone)this.onDone();
+      return false;
+    }
+    return true;
+  }
+}
+
+// ============ 核心游戏逻辑 ============
+function getRandomCreature(row,col){
+  let c,attempts=0;
+  do{c=Math.floor(Math.random()*GEMS.length);attempts++}
+  while(attempts<50&&wouldMatch(row,col,c));
+  return c;
+}
+
+function wouldMatch(row,col,creature){
+  if(col>=2&&grid[row][col-1]===creature&&grid[row][col-2]===creature)return true;
+  if(row>=2&&grid[row-1]&&grid[row-1][col]===creature&&grid[row-2]&&grid[row-2][col]===creature)return true;
+  return false;
+}
+
+function findMatches(){
+  const matches=new Set();
+  for(let r=0;r<GRID_SIZE;r++){
+    for(let c=0;c<GRID_SIZE-2;c++){
+      const v=grid[r][c];
+      if(v!==null&&v===grid[r][c+1]&&v===grid[r][c+2]){
+        matches.add(`${r},${c}`);matches.add(`${r},${c+1}`);matches.add(`${r},${c+2}`);
+        let k=c+3;while(k<GRID_SIZE&&grid[r][k]===v){matches.add(`${r},${k}`);k++}
+      }
+    }
+  }
+  for(let c=0;c<GRID_SIZE;c++){
+    for(let r=0;r<GRID_SIZE-2;r++){
+      const v=grid[r][c];
+      if(v!==null&&v===grid[r+1][c]&&v===grid[r+2][c]){
+        matches.add(`${r},${c}`);matches.add(`${r+1},${c}`);matches.add(`${r+2},${c}`);
+        let k=r+3;while(k<GRID_SIZE&&grid[k][c]===v){matches.add(`${k},${c}`);k++}
+      }
+    }
+  }
+  return Array.from(matches).map(p=>{const[r,c]=p.split(',').map(Number);return{row:r,col:c}});
+}
+
+function isAdjacent(a,b){
+  return(Math.abs(a.row-b.row)===1&&a.col===b.col)||(a.row===b.row&&Math.abs(a.col-b.col)===1);
+}
+
+// Swap in grid data
+function swapGrid(a,b){
+  const t=grid[a.row][a.col];grid[a.row][a.col]=grid[b.row][b.col];grid[b.row][b.col]=t;
+}
+
+// Drop cells and fill — returns list of {row,col,fromY} for animation
+function dropAndFill(){
+  const drops=[];
+  for(let c=0;c<GRID_SIZE;c++){
+    let emptyRow=GRID_SIZE-1;
+    for(let r=GRID_SIZE-1;r>=0;r--){
+      if(grid[r][c]!==null){
+        if(r!==emptyRow){
+          grid[emptyRow][c]=grid[r][c];
+          grid[r][c]=null;
+          const fromY=cellVisual[r][c].y; // current visual Y
+          cellVisual[emptyRow][c].x=c*CELL_SIZE+PADDING;
+          drops.push({row:emptyRow,col:c,fromY});
+        }
+        emptyRow--;
+      }
+    }
+    // Fill empty cells from top
+    for(let r=emptyRow;r>=0;r--){
+      grid[r][c]=Math.floor(Math.random()*GEMS.length);
+      const fromY=-(emptyRow-r+1)*CELL_SIZE; // start above canvas
+      cellVisual[r][c].x=c*CELL_SIZE+PADDING;
+      cellVisual[r][c].scale=1;
+      cellVisual[r][c].alpha=1;
+      drops.push({row:r,col:c,fromY});
+    }
+  }
+  return drops;
+}
+
+// ============ 游戏流程（动画驱动，非阻塞） ============
+function handleMove(cell1,cell2){
+  if(gamePhase!=='idle')return;
+  gamePhase='animating';
+  playSwapSound();
+  
+  // Animate swap
+  swapGrid(cell1,cell2);
+  // Swap visual positions too
+  const anim=new SwapAnim(cell1.row,cell1.col,cell2.row,cell2.col,0.2,()=>{
+    // After swap, reset visuals
+    resetCellVisual(cell1.row,cell1.col);
+    resetCellVisual(cell2.row,cell2.col);
+    
+    const matches=findMatches();
+    if(matches.length===0){
+      playInvalidSound();
+      // Swap back
+      swapGrid(cell1,cell2);
+      const backAnim=new SwapAnim(cell1.row,cell1.col,cell2.row,cell2.col,0.2,()=>{
+        resetCellVisual(cell1.row,cell1.col);
+        resetCellVisual(cell2.row,cell2.col);
+        combo=0;
+        gamePhase='idle';
+      });
+      animations.push(backAnim);
+    }else{
+      movesLeft--;
+      combo=0;
+      processMatchChain();
+    }
+    updateUI();
+    selected=null;
+  });
+  animations.push(anim);
+}
+
+function processMatchChain(){
+  const matches=findMatches();
+  if(matches.length===0){
+    // Chain done
+    checkGameState();
+    gamePhase='idle';
+    return;
+  }
+  
+  combo++;
+  playMatchSound();
+  if(combo>=2)playComboSound(combo);
+  
+  const baseScore=matches.length*10;
+  const comboBonus=combo>1?combo*5:0;
+  score+=baseScore+comboBonus;
+  
+  // Show combo text
+  if(combo>=2){
+    const mx=matches.reduce((s,m)=>s+m.col,0)/matches.length*CELL_SIZE+PADDING+CELL_SIZE/2;
+    const my=matches.reduce((s,m)=>s+m.row,0)/matches.length*CELL_SIZE+PADDING;
+    spawnScoreText(mx,my,`${combo}连击! ✨`,'#E84393');
+    shakeAmount=3+combo*1.5;
+  }
+  
+  // Score float
+  {
+    const mx=matches.reduce((s,m)=>s+m.col,0)/matches.length*CELL_SIZE+PADDING+CELL_SIZE/2;
+    const my=matches.reduce((s,m)=>s+m.row,0)/matches.length*CELL_SIZE+PADDING+CELL_SIZE/2;
+    spawnScoreText(mx,my-15,`+${baseScore+comboBonus}`,'#FF6B8A');
+  }
+  
+  updateUI();
+  
+  // Clear animation
+  const clearAnim=new ClearAnim(matches,0.25,()=>{
+    // After clear, drop and fill
+    const drops=dropAndFill();
+    if(drops.length>0){
+      const dropAnim=new DropAnim(drops,0.3,()=>{
+        // After drop, check for more matches
+        processMatchChain();
+      });
+      animations.push(dropAnim);
+    }else{
+      processMatchChain();
+    }
+  });
+  animations.push(clearAnim);
+}
+
+function resetCellVisual(r,c){
+  cellVisual[r][c].x=c*CELL_SIZE+PADDING;
+  cellVisual[r][c].y=r*CELL_SIZE+PADDING;
+  cellVisual[r][c].scale=1;
+  cellVisual[r][c].alpha=1;
+}
+
+function checkGameState(){
+  if(score>=targetScore){
+    gamePhase='gameover';
+    playLevelUpSound();
+    // Big particle burst
+    const cx=canvas.width/2, cy=canvas.height/2;
+    for(let i=0;i<GEMS.length;i++){
+      spawnParticles(cx+Math.random()*100-50,cy+Math.random()*100-50,i,10);
+    }
+    setTimeout(()=>showLevelComplete(),600);
+  }else if(movesLeft<=0){
+    gamePhase='gameover';
+    playFailSound();
+    setTimeout(()=>showLevelFail(),400);
+  }
+}
+
+function showLevelComplete(){
+  const stars=score>=targetScore*2?3:score>=targetScore*1.5?2:1;
+  const starStr='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('starRating').textContent=starStr;
+  document.getElementById('modalTitle').textContent=stars===3?'完美通关！':stars===2?'太棒了！':'通关！';
+  document.getElementById('modalText').textContent=`你完成了第 ${currentLevel+1} 关！得分: ${score}`;
+  document.getElementById('modalEmoji').textContent=stars===3?'🏆':'🎉';
+  if(!highScores[currentLevel]||score>highScores[currentLevel])highScores[currentLevel]=score;
+  document.getElementById('levelModal').classList.add('show');
+  saveGame();
+}
+
+function showLevelFail(){
+  document.getElementById('failModal').classList.add('show');
+}
+
+// ============ 渲染循环 ============
+function render(timestamp){
+  const canvasW=canvas.width, canvasH=canvas.height;
+  
+  ctx.save();
+  
+  // Shake
+  if(shakeAmount>0.5){
+    const sx=(Math.random()-0.5)*shakeAmount;
+    const sy=(Math.random()-0.5)*shakeAmount;
+    ctx.translate(sx,sy);
+    shakeAmount*=shakeDecay;
+  }else{shakeAmount=0}
+  
+  // Background
+  const bgGrad=ctx.createLinearGradient(0,0,0,canvasH);
+  bgGrad.addColorStop(0,'#FFF0F3');
+  bgGrad.addColorStop(1,'#FFE0E8');
+  ctx.fillStyle=bgGrad;
+  roundRect(ctx,0,0,canvasW,canvasH,18);
+  ctx.fill();
+  
+  // Grid cells background
+  for(let r=0;r<GRID_SIZE;r++){
+    for(let c=0;c<GRID_SIZE;c++){
+      const x=c*CELL_SIZE+PADDING;
+      const y=r*CELL_SIZE+PADDING;
+      ctx.fillStyle='rgba(255,255,255,0.45)';
+      roundRect(ctx,x+2,y+2,CELL_SIZE-4,CELL_SIZE-4,10);
+      ctx.fill();
+    }
+  }
+  
+  // Draw gems at their visual positions
+  for(let r=0;r<GRID_SIZE;r++){
+    for(let c=0;c<GRID_SIZE;c++){
+      const v=cellVisual[r][c];
+      if(grid[r][c]!==null&&grid[r][c]!==undefined){
+        drawGem(ctx,v.x,v.y,CELL_SIZE,grid[r][c],v.scale,v.alpha);
+      }
+    }
+  }
+  
+  // Selection
+  if(selected&&gamePhase==='idle'){
+    const x=selected.col*CELL_SIZE+PADDING;
+    const y=selected.row*CELL_SIZE+PADDING;
+    drawSelection(ctx,x,y,CELL_SIZE,timestamp||0);
+  }
+  
+  // Particles
+  renderParticles(ctx);
+  
+  // Float texts
+  renderFloatTexts(ctx);
+  
+  ctx.restore();
+}
+
+function gameLoop(timestamp){
+  const dt=Math.min(0.05, (timestamp-lastTime)/1000); // cap dt
+  lastTime=timestamp;
+  
+  // Update animations
+  for(let i=animations.length-1;i>=0;i--){
+    if(!animations[i].update(dt)){
+      animations.splice(i,1);
+    }
+  }
+  
+  updateParticles(dt);
+  updateFloatTexts(dt);
+  
+  render(timestamp);
+  requestAnimationFrame(gameLoop);
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  if(ctx.roundRect){
+    ctx.roundRect(x,y,w,h,r);
+  }else{
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+}
+
+// ============ 输入处理 ============
+function getCellFromXY(clientX,clientY){
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width;
+  const scaleY=canvas.height/rect.height;
+  const x=(clientX-rect.left)*scaleX;
+  const y=(clientY-rect.top)*scaleY;
+  const col=Math.floor((x-PADDING)/CELL_SIZE);
+  const row=Math.floor((y-PADDING)/CELL_SIZE);
+  if(row>=0&&row<GRID_SIZE&&col>=0&&col<GRID_SIZE)return{row,col};
+  return null;
+}
+
+function handleCellClick(cell){
+  if(gamePhase!=='idle')return;
+  if(!selected){
+    selected=cell;
+    playSelectSound();
+  }else if(selected.row===cell.row&&selected.col===cell.col){
+    selected=null;
+  }else if(isAdjacent(selected,cell)){
+    handleMove(selected,cell);
+  }else{
+    selected=cell;
+    playSelectSound();
+  }
+}
+
+canvas.addEventListener('mousedown',e=>{
+  initAudio();
+  const cell=getCellFromXY(e.clientX,e.clientY);
+  if(cell)handleCellClick(cell);
+});
+
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  initAudio();
+  if(gamePhase!=='idle')return;
+  const touch=e.touches[0];
+  const cell=getCellFromXY(touch.clientX,touch.clientY);
+  if(cell){
+    touchStart=cell;
+    if(!selected){
+      selected=cell;
+      playSelectSound();
+    }
+  }
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(gamePhase!=='idle'||!touchStart)return;
+  const touch=e.changedTouches[0];
+  const cell=getCellFromXY(touch.clientX,touch.clientY);
+  if(cell){
+    if(selected&&isAdjacent(selected,cell)){
+      handleMove(selected,cell);
+    }else if(selected&&selected.row===cell.row&&selected.col===cell.col){
+      // tapped same — if it was already selected before touch, deselect
+      // Actually keep selected (was just set in touchstart)
+    }else if(cell){
+      selected=cell;
+      playSelectSound();
+    }
+  }
+  touchStart=null;
+},{passive:false});
+
+// ============ UI 更新 ============
+function updateUI(){
+  document.getElementById('score').textContent=score;
+  document.getElementById('target').textContent=targetScore;
+  document.getElementById('combo').textContent=combo;
+  document.getElementById('levelBadge').textContent=`第 ${currentLevel+1} 关`;
+  document.getElementById('movesLeft').textContent=`步数: ${movesLeft}`;
+  const pct=Math.min(100,(score/targetScore)*100);
+  document.getElementById('progressBar').style.width=`${pct}%`;
+  document.getElementById('progressText').textContent=`${score} / ${targetScore}`;
+}
+
+// ============ 关卡 ============
+function startLevel(levelIndex){
+  if(levelIndex>=LEVELS.length)levelIndex=LEVELS.length-1;
+  currentLevel=levelIndex;
+  const level=LEVELS[levelIndex];
+  GRID_SIZE=level.grid;
+  targetScore=level.target;
+  movesLeft=level.moves;
+  score=0;combo=0;
+  selected=null;
+  gamePhase='idle';
+  animations=[];particles=[];floatTexts=[];
+  
+  updateCanvasSize();
+  
+  grid=[];
+  for(let r=0;r<GRID_SIZE;r++){
+    grid[r]=[];
+    for(let c=0;c<GRID_SIZE;c++){
+      grid[r][c]=getRandomCreature(r,c);
+    }
+  }
+  while(findMatches().length>0){
+    for(let r=0;r<GRID_SIZE;r++)
+      for(let c=0;c<GRID_SIZE;c++)
+        grid[r][c]=getRandomCreature(r,c);
+  }
+  
+  // Entrance animation: gems drop from above
+  const drops=[];
+  for(let r=0;r<GRID_SIZE;r++){
+    for(let c=0;c<GRID_SIZE;c++){
+      const fromY=-(GRID_SIZE-r+Math.random()*2)*CELL_SIZE;
+      cellVisual[r][c].y=fromY;
+      drops.push({row:r,col:c,fromY});
+    }
+  }
+  animations.push(new DropAnim(drops,0.5,null));
+  
+  updateUI();
+  saveGame();
+}
+
+// ============ 初始化 ============
+function initGame(){
+  loadGame();
+  
+  // Render tutorial gems
+  const gemsDiv=document.getElementById('tutorialGems');
+  gemsDiv.innerHTML='';
+  for(const g of GEMS){
+    const d=document.createElement('div');
+    d.className='tutorial-gem';
+    d.style.background=`radial-gradient(circle at 35% 35%, ${g.c1}, ${g.c2})`;
+    d.style.boxShadow=`0 2px 8px ${g.c2}40`;
+    gemsDiv.appendChild(d);
+  }
+  
+  // Always initialize canvas and grid visual before gameLoop starts
+  updateCanvasSize();
+  
+  if(!tutorialDone){
+    // Init a dummy grid so render() doesn't crash during tutorial
+    grid=[];
+    for(let r=0;r<GRID_SIZE;r++){
+      grid[r]=[];
+      for(let c=0;c<GRID_SIZE;c++) grid[r][c]=r*GRID_SIZE+c < GEMS.length ? (r*GRID_SIZE+c)%GEMS.length : Math.floor(Math.random()*GEMS.length);
+    }
+    document.getElementById('tutorialOverlay').classList.add('show');
+  }else{
+    startLevel(currentLevel);
+  }
+  
+  lastTime=performance.now();
+  requestAnimationFrame(gameLoop);
+}
+
+// ============ 按钮 ============
+document.getElementById('startGameBtn').addEventListener('click',()=>{
+  initAudio();tutorialDone=true;saveGame();
+  document.getElementById('tutorialOverlay').classList.remove('show');
+  startLevel(0);
+});
+document.getElementById('nextLevelBtn').addEventListener('click',()=>{
+  document.getElementById('levelModal').classList.remove('show');
+  startLevel(currentLevel+1);
+});
+document.getElementById('retryBtn').addEventListener('click',()=>{
+  document.getElementById('levelModal').classList.remove('show');
+  startLevel(currentLevel);
+});
+document.getElementById('retryBtn2').addEventListener('click',()=>{
+  document.getElementById('failModal').classList.remove('show');
+  startLevel(currentLevel);
+});
+document.getElementById('soundToggle').addEventListener('click',()=>{
+  soundEnabled=!soundEnabled;
+  document.getElementById('soundToggle').textContent=soundEnabled?'🔊':'🔇';
+});
+
+// Handle resize
+window.addEventListener('resize',()=>{
+  if(grid.length>0){
+    updateCanvasSize();
+  }
+});
+
+initGame();
+</script>
 </body>
 </html>
