@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🥭 芒果消消乐 - 魔兽萌宠版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 420px;
+            width: 95%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .title {
+            font-size: 1.8em;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 80px;
+        }
+        
+        .stat-label {
+            font-size: 0.75em;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .rage-bar-container {
+            background: #ddd;
+            border-radius: 10px;
+            height: 20px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .rage-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #ff9ff3);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .rage-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 0 0 3px white;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
+            touch-action: none;
+        }
+        
+        .pet-summon {
+            position: fixed;
+            font-size: 2.5em;
+            animation: petPop 0.6s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.8;
+        }
+        
+        @keyframes petPop {
+            0% { transform: scale(0) translateY(0); opacity: 0; }
+            30% { transform: scale(1.1) translateY(-10px); opacity: 0.8; }
+            100% { transform: scale(0.8) translateY(-30px); opacity: 0; }
+        }
+        
+        .combo-text {
+            position: fixed;
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 0 white, -2px -2px 0 white;
+            animation: comboFly 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        @keyframes comboFly {
+            0% { transform: scale(0.5); opacity: 0; }
+            30% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1) translateY(-30px); opacity: 0; }
+        }
+        
+        .message {
+            text-align: center;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 12px;
+            font-size: 1em;
+            display: none;
+        }
+        
+        .message.show {
+            display: block;
+            animation: messageIn 0.3s ease;
+        }
+        
+        @keyframes messageIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .sound-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .sound-controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .sound-controls button:hover {
+            transform: scale(1.05);
+        }
+        
+        .sound-controls button.off {
+            background: #ccc;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .footer span {
+            color: #f5576c;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">🥭 芒果消消乐</h1>
+            <p style="font-size: 0.9em; color: #888;">魔兽萌宠版 ✨</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">分数</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">连击</div>
+                <div class="stat-value" id="combo">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">等级</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+        </div>
+        
+        <div class="rage-bar-container">
+            <div class="rage-bar" id="rageBar"></div>
+            <div class="rage-text" id="rageText">怒气值：0%（连击充能！）</div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="sound-controls">
+            <button id="btnSound" onclick="toggleSound()">🔊 音效</button>
+            <button id="btnBGM" onclick="toggleBGM()">🎵 音乐</button>
+        </div>
+        
+        <div class="footer">
+            专属于 <span>芒果过敏</span> 的小游戏 💕
+        </div>
+    </div>
+
+    <script>
+        // ==================== 音效系统 ====================
+        class SoundManager {
+            constructor() {
+                this.audioContext = null;
+                this.enabled = true;
+                this.bgmEnabled = true;
+                this.bgmGain = null;
+                this.bgmOscillators = [];
+                this.init();
+            }
+            
+            init() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch(e) {
+                    console.log('Web Audio API not supported');
+                }
+            }
+            
+            resume() {
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+            }
+            
+            // 播放音符
+            playNote(frequency, duration = 0.1, type = 'sine', volume = 0.3) {
+                if (!this.enabled || !this.audioContext) return;
+                this.resume();
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.type = type;
+                oscillator.frequency.value = frequency;
+                
+                gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.start();
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+            
+            // 消除音效 - 清脆的叮咚声
+            playMatch() {
+                if (!this.enabled) return;
+                this.playNote(880, 0.1, 'sine', 0.2);
+                setTimeout(() => this.playNote(1100, 0.1, 'sine', 0.15), 50);
+            }
+            
+            // 连击音效 - 递增的音阶
+            playCombo(comboLevel) {
+                if (!this.enabled) return;
+                const baseFreq = 400 + (comboLevel * 100);
+                this.playNote(baseFreq, 0.15, 'sine', 0.25);
+                setTimeout(() => this.playNote(baseFreq * 1.25, 0.15, 'sine', 0.2), 80);
+                setTimeout(() => this.playNote(baseFreq * 1.5, 0.2, 'sine', 0.15), 160);
+            }
+            
+            // 升级音效 - 华丽的上升音阶
+            playLevelUp() {
+                if (!this.enabled) return;
+                const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.playNote(freq, 0.2, 'sine', 0.3), i * 100);
+                });
+            }
+            
+            // 无效移动音效
+            playInvalid() {
+                if (!this.enabled) return;
+                this.playNote(200, 0.15, 'square', 0.15);
+            }
+            
+            // 选中音效
+            playSelect() {
+                if (!this.enabled) return;
+                this.playNote(660, 0.05, 'sine', 0.1);
+            }
+            
+            // 怒气爆发音效
+            playRage() {
+                if (!this.enabled) return;
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        this.playNote(200 + i * 100, 0.1, 'sawtooth', 0.2);
+                    }, i * 50);
+                }
+            }
+            
+            // 关卡完成音效
+            playLevelComplete() {
+                if (!this.enabled) return;
+                const melody = [523, 659, 784, 1047, 784, 1047];
+                melody.forEach((freq, i) => {
+                    setTimeout(() => this.playNote(freq, 0.2, 'sine', 0.25), i * 120);
+                });
+            }
+            
+            // 游戏失败音效
+            playGameOver() {
+                if (!this.enabled) return;
+                const notes = [400, 350, 300, 250];
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.playNote(freq, 0.3, 'sine', 0.2), i * 150);
+                });
+            }
+            
+            // 背景音乐 - 简单的循环旋律
+            startBGM() {
+                if (!this.bgmEnabled || !this.audioContext) return;
+                this.resume();
+                this.stopBGM();
+                
+                this.bgmGain = this.audioContext.createGain();
+                this.bgmGain.connect(this.audioContext.destination);
+                this.bgmGain.gain.value = 0.08;
+                
+                const playBGMLoop = () => {
+                    if (!this.bgmEnabled) return;
+                    
+                    // 简单的循环旋律
+                    const melody = [
+                        {freq: 262, dur: 0.4}, // C4
+                        {freq: 330, dur: 0.4}, // E4
+                        {freq: 392, dur: 0.4}, // G4
+                        {freq: 330, dur: 0.4}, // E4
+                        {freq: 294, dur: 0.4}, // D4
+                        {freq: 349, dur: 0.4}, // F4
+                        {freq: 392, dur: 0.4}, // G4
+                        {freq: 349, dur: 0.4}, // F4
+                    ];
+                    
+                    let time = this.audioContext.currentTime;
+                    melody.forEach(note => {
+                        const osc = this.audioContext.createOscillator();
+                        const noteGain = this.audioContext.createGain();
+                        
+                        osc.connect(noteGain);
+                        noteGain.connect(this.bgmGain);
+                        
+                        osc.type = 'sine';
+                        osc.frequency.value = note.freq;
+                        
+                        noteGain.gain.setValueAtTime(0.5, time);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, time + note.dur * 0.9);
+                        
+                        osc.start(time);
+                        osc.stop(time + note.dur);
+                        
+                        this.bgmOscillators.push(osc);
+                        time += note.dur;
+                    });
+                    
+                    // 循环播放
+                    this.bgmTimeout = setTimeout(playBGMLoop, melody.length * 400);
+                };
+                
+                playBGMLoop();
+            }
+            
+            stopBGM() {
+                if (this.bgmTimeout) {
+                    clearTimeout(this.bgmTimeout);
+                    this.bgmTimeout = null;
+                }
+                this.bgmOscillators.forEach(osc => {
+                    try { osc.stop(); } catch(e) {}
+                });
+                this.bgmOscillators = [];
+            }
+            
+            toggleSound() {
+                this.enabled = !this.enabled;
+                return this.enabled;
+            }
+            
+            toggleBGM() {
+                this.bgmEnabled = !this.bgmEnabled;
+                if (this.bgmEnabled) {
+                    this.startBGM();
+                } else {
+                    this.stopBGM();
+                }
+                return this.bgmEnabled;
+            }
+        }
+        
+        const sound = new SoundManager();
+        
+        // 游戏配置
+        const GRID_SIZE = 7;
+        const CELL_SIZE = 50;
+        const PADDING = 5;
+        const CANVAS_SIZE = GRID_SIZE * CELL_SIZE + PADDING * 2;
+        
+        // 魔兽萌宠 - 使用emoji作为图案
+        const CREATURES = [
+            { emoji: '🐸', name: '小鱼人', color: '#4CAF50' },
+            { emoji: '🦊', name: '小狐狸', color: '#FF9800' },
+            { emoji: '🐻', name: '小熊熊', color: '#795548' },
+            { emoji: '🐰', name: '月兔兔', color: '#E91E63' },
+            { emoji: '🦉', name: '猫头鹰', color: '#9C27B0' },
+            { emoji: '🐲', name: '小龙崽', color: '#F44336' }
+        ];
+        
+        // 召唤宠物（连击奖励）
+        const SUMMON_PETS = ['🦄', '🐉', '🦋', '🌟', '💎', '🔮', '👑', '🎀'];
+        
+        // 游戏状态
+        let grid = [];
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let level = 1;
+        let rage = 0;
+        let selected = null;
+        let isAnimating = false;
+        let touchStart = null;
+        
+        // Canvas设置
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = CANVAS_SIZE;
+        canvas.height = CANVAS_SIZE;
+        
+        // 初始化游戏
+        function initGame() {
+            grid = [];
+            for (let row = 0; row < GRID_SIZE; row++) {
+                grid[row] = [];
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    grid[row][col] = getRandomCreature(row, col);
+                }
+            }
+            // 确保初始没有匹配
+            while (findMatches().length > 0) {
+                for (let row = 0; row < GRID_SIZE; row++) {
+                    for (let col = 0; col < GRID_SIZE; col++) {
+                        grid[row][col] = getRandomCreature(row, col);
+                    }
+                }
+            }
+            render();
+        }
+        
+        // 获取随机生物（避免初始匹配）
+        function getRandomCreature(row, col) {
+            let creature;
+            let attempts = 0;
+            do {
+                creature = Math.floor(Math.random() * CREATURES.length);
+                attempts++;
+            } while (attempts < 50 && wouldMatch(row, col, creature));
+            return creature;
+        }
+        
+        // 检查是否会造成匹配
+        function wouldMatch(row, col, creature) {
+            // 检查水平
+            if (col >= 2 && 
+                grid[row][col-1] === creature && 
+                grid[row][col-2] === creature) {
+                return true;
+            }
+            // 检查垂直
+            if (row >= 2 && 
+                grid[row-1] && grid[row-1][col] === creature && 
+                grid[row-2] && grid[row-2][col] === creature) {
+                return true;
+            }
+            return false;
+        }
+        
+        // 渲染游戏
+        function render() {
+            ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * CELL_SIZE + PADDING;
+                    const y = row * CELL_SIZE + PADDING;
+                    const creature = grid[row][col];
+                    
+                    if (creature !== null && creature !== undefined) {
+                        // 绘制格子背景
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                        ctx.beginPath();
+                        ctx.roundRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4, 10);
+                        ctx.fill();
+                        
+                        // 选中高亮
+                        if (selected && selected.row === row && selected.col === col) {
+                            ctx.strokeStyle = '#ff6b6b';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.roundRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4, 10);
+                            ctx.stroke();
+                        }
+                        
+                        // 绘制emoji
+                        ctx.font = '32px serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(CREATURES[creature].emoji, x + CELL_SIZE/2, y + CELL_SIZE/2 + 2);
+                    }
+                }
+            }
+        }
+        
+        // 获取点击位置
+        function getCellFromEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            
+            const col = Math.floor((x - PADDING) / CELL_SIZE);
+            const row = Math.floor((y - PADDING) / CELL_SIZE);
+            
+            if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+                return { row, col };
+            }
+            return null;
+        }
+        
+        // 检查是否相邻
+        function isAdjacent(cell1, cell2) {
+            const rowDiff = Math.abs(cell1.row - cell2.row);
+            const colDiff = Math.abs(cell1.col - cell2.col);
+            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+        }
+        
+        // 交换格子
+        function swap(cell1, cell2) {
+            const temp = grid[cell1.row][cell1.col];
+            grid[cell1.row][cell1.col] = grid[cell2.row][cell2.col];
+            grid[cell2.row][cell2.col] = temp;
+        }
+        
+        // 查找所有匹配
+        function findMatches() {
+            const matches = new Set();
+            
+            // 水平检查
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE - 2; col++) {
+                    const creature = grid[row][col];
+                    if (creature !== null && 
+                        creature === grid[row][col+1] && 
+                        creature === grid[row][col+2]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row},${col+1}`);
+                        matches.add(`${row},${col+2}`);
+                        // 检查更长的匹配
+                        let k = col + 3;
+                        while (k < GRID_SIZE && grid[row][k] === creature) {
+                            matches.add(`${row},${k}`);
+                            k++;
+                        }
+                    }
+                }
+            }
+            
+            // 垂直检查
+            for (let col = 0; col < GRID_SIZE; col++) {
+                for (let row = 0; row < GRID_SIZE - 2; row++) {
+                    const creature = grid[row][col];
+                    if (creature !== null && 
+                        creature === grid[row+1][col] && 
+                        creature === grid[row+2][col]) {
+                        matches.add(`${row},${col}`);
+                        matches.add(`${row+1},${col}`);
+                        matches.add(`${row+2},${col}`);
+                        // 检查更长的匹配
+                        let k = row + 3;
+                        while (k < GRID_SIZE && grid[k][col] === creature) {
+                            matches.add(`${k},${col}`);
+                            k++;
+                        }
+                    }
+                }
+            }
+            
+            return Array.from(matches).map(pos => {
+                const [row, col] = pos.split(',').map(Number);
+                return { row, col };
+            });
+        }
+        
+        // 处理移动
+        async function handleMove(cell1, cell2) {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            swap(cell1, cell2);
+            render();
+            
+            const matches = findMatches();
+            if (matches.length === 0) {
+                // 无效移动，换回来
+                sound.playInvalid();
+                await sleep(200);
+                swap(cell1, cell2);
+                render();
+                combo = 0;
+                updateUI();
+            } else {
+                // 有效移动，处理消除
+                combo = 0;
+                await processMatches();
+            }
+            
+            selected = null;
+            isAnimating = false;
+        }
+        
+        // 处理消除
+        async function processMatches() {
+            let matches = findMatches();
+            
+            while (matches.length > 0) {
+                combo++;
+                maxCombo = Math.max(maxCombo, combo);
+                
+                // 计算得分
+                const baseScore = matches.length * 10;
+                const comboBonus = combo > 1 ? combo * 5 : 0;
+                const matchScore = baseScore + comboBonus;
+                score += matchScore;
+                
+                // 增加怒气
+                rage = Math.min(100, rage + matches.length * 3 + combo * 2);
+                
+                // 播放消除音效
+                sound.playMatch();
+                
+                // 显示连击特效
+                if (combo >= 2) {
+                    showComboText(combo);
+                    sound.playCombo(combo);
+                }
+                
+                // 连击召唤宠物（减少频率避免闪烁）
+                if (combo >= 5 && Math.random() < 0.4) {
+                    summonPet();
+                }
+                
+                // 怒气满了触发大招
+                if (rage >= 100) {
+                    sound.playRage();
+                    await triggerRageSkill();
+                }
+                
+                updateUI();
+                
+                // 消除匹配的格子
+                for (const match of matches) {
+                    grid[match.row][match.col] = null;
+                }
+                render();
+                await sleep(200);
+                
+                // 下落
+                await dropCells();
+                
+                // 填充新格子
+                fillEmptyCells();
+                render();
+                await sleep(150);
+                
+                // 检查新的匹配
+                matches = findMatches();
+            }
+            
+            // 检查升级
+            checkLevelUp();
+        }
+        
+        // 格子下落
+        async function dropCells() {
+            let dropped = false;
+            
+            for (let col = 0; col < GRID_SIZE; col++) {
+                let emptyRow = GRID_SIZE - 1;
+                
+                for (let row = GRID_SIZE - 1; row >= 0; row--) {
+                    if (grid[row][col] !== null) {
+                        if (row !== emptyRow) {
+                            grid[emptyRow][col] = grid[row][col];
+                            grid[row][col] = null;
+                            dropped = true;
+                        }
+                        emptyRow--;
+                    }
+                }
+            }
+            
+            if (dropped) {
+                render();
+                await sleep(100);
+            }
+        }
+        
+        // 填充空格子
+        function fillEmptyCells() {
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    if (grid[row][col] === null) {
+                        grid[row][col] = Math.floor(Math.random() * CREATURES.length);
+                    }
+                }
+            }
+        }
+        
+        // 显示连击文字
+        function showComboText(comboNum) {
+            const text = document.createElement('div');
+            text.className = 'combo-text';
+            text.textContent = `${comboNum}连击！✨`;
+            text.style.left = `${Math.random() * 200 + 100}px`;
+            text.style.top = `${Math.random() * 200 + 200}px`;
+            document.body.appendChild(text);
+            
+            setTimeout(() => text.remove(), 800);
+        }
+        
+        // 召唤宠物
+        function summonPet() {
+            const pet = document.createElement('div');
+            pet.className = 'pet-summon';
+            pet.textContent = SUMMON_PETS[Math.floor(Math.random() * SUMMON_PETS.length)];
+            pet.style.left = `${Math.random() * 200 + 100}px`;
+            pet.style.top = `${Math.random() * 200 + 200}px`;
+            document.body.appendChild(pet);
+            
+            setTimeout(() => pet.remove(), 1000);
+        }
+        
+        // 怒气大招
+        async function triggerRageSkill() {
+            rage = 0;
+            updateUI();
+            
+            showMessage('🔥 怒气爆发！随机消除一行！', 'success');
+            
+            // 随机消除一整行
+            const randomRow = Math.floor(Math.random() * GRID_SIZE);
+            for (let col = 0; col < GRID_SIZE; col++) {
+                grid[randomRow][col] = null;
+                score += 15;
+            }
+            render();
+            await sleep(300);
+            
+            await dropCells();
+            fillEmptyCells();
+            render();
+        }
+        
+        // 检查升级
+        function checkLevelUp() {
+            const newLevel = Math.floor(score / 500) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                sound.playLevelUp();
+                showMessage(`🎉 升级！当前等级 ${level}`, 'success');
+            }
+            updateUI();
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('combo').textContent = combo;
+            document.getElementById('level').textContent = level;
+            document.getElementById('rageBar').style.width = `${rage}%`;
+            document.getElementById('rageText').textContent = `怒气值：${Math.floor(rage)}%${rage >= 100 ? ' 💥爆发！' : '（连击充能！）'}`;
+        }
+        
+        // 显示消息
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            
+            setTimeout(() => {
+                msg.className = 'message';
+            }, 2000);
+        }
+        
+        // 工具函数
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // 事件监听
+        canvas.addEventListener('mousedown', (e) => {
+            if (isAnimating) return;
+            const cell = getCellFromEvent(e);
+            if (!cell) return;
+            
+            if (!selected) {
+                selected = cell;
+                sound.playSelect();
+                render();
+            } else if (selected.row === cell.row && selected.col === cell.col) {
+                selected = null;
+                render();
+            } else if (isAdjacent(selected, cell)) {
+                handleMove(selected, cell);
+            } else {
+                selected = cell;
+                sound.playSelect();
+                render();
+            }
+        });
+        
+        // 触摸支持
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (isAnimating) return;
+            const cell = getCellFromEvent(e);
+            if (!cell) return;
+            
+            touchStart = cell;
+            
+            if (!selected) {
+                selected = cell;
+                render();
+            }
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isAnimating || !touchStart) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.changedTouches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            const col = Math.floor((x - PADDING) / CELL_SIZE);
+            const row = Math.floor((y - PADDING) / CELL_SIZE);
+            
+            if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+                const cell = { row, col };
+                
+                if (selected && isAdjacent(selected, cell)) {
+                    handleMove(selected, cell);
+                } else if (selected && selected.row === cell.row && selected.col === cell.col) {
+                    selected = null;
+                    render();
+                } else {
+                    selected = cell;
+                    render();
+                }
+            }
+            
+            touchStart = null;
+        });
+        
+        // roundRect polyfill
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+        
+        // 音效控制函数
+        function toggleSound() {
+            const enabled = sound.toggleSound();
+            document.getElementById('btnSound').textContent = enabled ? '🔊 音效' : '🔇 音效';
+            document.getElementById('btnSound').classList.toggle('off', !enabled);
+        }
+        
+        function toggleBGM() {
+            const enabled = sound.toggleBGM();
+            document.getElementById('btnBGM').textContent = enabled ? '🎵 音乐' : '🎵 静音';
+            document.getElementById('btnBGM').classList.toggle('off', !enabled);
+        }
+        
+        // 首次交互启动音频
+        let audioStarted = false;
+        document.addEventListener('click', function initAudio() {
+            if (!audioStarted) {
+                sound.resume();
+                sound.startBGM();
+                audioStarted = true;
+            }
+        }, { once: false });
+        
+        // 启动游戏
+        initGame();
+        updateUI();
+        showMessage('💕 点击萌宠交换位置，三个相同消除！', 'success');
+    </script>
+</body>
+</html>
