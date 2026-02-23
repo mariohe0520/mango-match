@@ -697,13 +697,13 @@
                 sound.playMatch();
                 
                 // 显示连击特效
-                if (combo >= 2) {
+                if (combo >= 8) {
                     showComboText(combo);
                     sound.playCombo(combo);
                 }
                 
                 // 连击召唤宠物（减少频率避免闪烁）
-                if (combo >= 5 && Math.random() < 0.4) {
+                if (combo >= 10 && Math.random() < 0.2) {
                     summonPet();
                 }
                 
